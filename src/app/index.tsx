@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -10,6 +10,7 @@ export default function Index() {
 
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const router = useRouter()
 
 
     // Validate the email and password fields and show an alert if they are empty, otherwise show a success message
@@ -18,7 +19,11 @@ export default function Index() {
            return  Alert.alert('You Stupid!', 'Please fill in all fields');
         }
 
-        Alert.alert('Success', 'You have successfully signed in!');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.trim())) {
+                return Alert.alert('Failed', 'Please enter a valid email address');
+        }
+        router.push('/home')
     }
 
     return (
@@ -39,7 +44,7 @@ export default function Index() {
                     <View style={styles.form}>
                         <Input placeholder="Email" keyboardType="email-address" onChangeText={setEmail}/>
                         <Input placeholder="Password" secureTextEntry={true} onChangeText={setPassword} />
-                        <Button label="Let's Get Started" onPress={handleSignIn}/>
+                        <Button  label="Let's Get Started" onPress={handleSignIn}/>
                     </View>
                     {/* Add a Link  */}
                     <Text style={styles.footerText}>
