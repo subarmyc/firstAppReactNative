@@ -1,7 +1,9 @@
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+
 
 //Define name and repository name to variable
 const GITHUB_OWNER = 'subarmyc'
@@ -73,6 +75,7 @@ export default function Home() {
                         </TouchableOpacity>
                     </View>
 
+                    {/* Gradient of card on homepage */}
                     <LinearGradient
                         colors={['#7C4DFF', '#1E90FF']}
                         locations={[0, 0.9]}
@@ -81,30 +84,35 @@ export default function Home() {
                         style={styles.projetCard}
                     >
                     
-                                <View style ={styles.cardContent} >  
-                                    <View style ={styles.leftColumnCard}>  
-                                        <Text style={styles.cardTitle}>My First App</Text>
+                        <View style ={styles.cardContent} >  
+                            <View style ={styles.leftColumnCard}>  
+                                <Text style={styles.cardTitle}>My First App</Text>
 
-                                        <View style={styles.infoRow}>
-                                            <Feather name="code" color='#dbd7d7' />
-                                            <Text style={styles.infoText}>{repoData?.language}</Text>
-                                        </View>q
+                                <View style={styles.infoRow}>
+                                    <Feather name="code" color='#dbd7d7' />
+                                    <Text style={styles.infoText}>{repoData?.language}</Text>
+                                </View>q
 
-                                        <View style={styles.infoRow}>
-                                            <Feather name="git-commit" color='#dbd7d7'  />
-                                            <Text style={styles.infoText}>{repoData?.totalCommits} commits</Text>
-                                        </View>
-
-                                        <View style={styles.infoRow}>
-                                            <Feather name="clock" color ='#dbd7d7'/>
-                                            <Text style={styles.infoText}>
-                                                Último commit: {formatDate(repoData?.lastCommitDate ?? '')}
-                                            </Text>
-                                        </View>
-                                    </View>
-                            <Image source={require('@/assets/logo.png')} style = {styles.imageCard}/>
-
+                                <View style={styles.infoRow}>
+                                    <Feather name="git-commit" color='#dbd7d7'  />
+                                    <Text style={styles.infoText}>{repoData?.totalCommits} commits</Text>
                                 </View>
+
+                                <View style={styles.infoRow}>
+                                    <Feather name="clock" color ='#dbd7d7'/>
+                                    <Text style={styles.infoText}>
+                                        Último commit: {formatDate(repoData?.lastCommitDate ?? '')}
+                                    </Text>
+                                </View>
+                                <TouchableOpacity 
+                                style={styles.repoButton} 
+                                onPress={() => Linking.openURL(`https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}`)}>
+                                    <Text style={styles.repoButtonText}>Join to Repository</Text>
+                                    <Feather name="arrow-right" color="#7C4DFF" size={16} />
+                                </TouchableOpacity>
+                            </View>
+                            <Image source={require('@/assets/logo.png')} style = {styles.imageCard}/>
+                        </View>
                            
                     </LinearGradient>
                     
@@ -178,13 +186,12 @@ const styles = StyleSheet.create({
         marginTop: 20,
         marginLeft: 20,
         borderRadius: 10,
-        padding: 20,
+        padding: 15,
         justifyContent: 'center',
     },
     imageCard:{
         width: 80,
-        height:  100,
-        resizeMode: 'contain',
+        height: '50%',
         borderRadius: 5
     },
     cardTitle: {
@@ -204,6 +211,24 @@ const styles = StyleSheet.create({
     infoText: {
         color: '#dbd7d7',
         fontSize: 14,
+    },
+    repoButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#F8F9FA',
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 10,
+        gap: 8,
+        marginTop: 8,
+        alignSelf: 'flex-start', 
+    },
+
+    repoButtonText: {
+        color: '#7C4DFF',
+        fontSize: 14,
+        fontWeight: '600',
     },
 
     bottomBanner: {
