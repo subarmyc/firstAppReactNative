@@ -136,13 +136,16 @@ export default function Home() {
                             <Text style={styles.navName}>Profile</Text>
                         </TouchableOpacity>
                     </View>
+
+                    <View style ={styles.carouselContent}>
+
+                    </View>
                 </View>
                 
             </ScrollView>
         </KeyboardAvoidingView>
     )
 }
-
 
 const styles = StyleSheet.create({
     container: {
@@ -251,6 +254,17 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
     },
+    carouselContent:{
+        backgroundColor: '#dada',
+        width: '90%',
+        minHeight: 300,
+        marginTop: 40,
+        marginLeft: 20,
+        borderRadius: 10,
+        padding: 15,
+        justifyContent: 'center',
+    },
+
     navBar: {
         position: 'absolute',
         bottom: 20,        
