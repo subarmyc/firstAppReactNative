@@ -67,7 +67,7 @@ export default function Home() {
                             <Image source={require('@/assets/home.png')} style={styles.logo} />
                             <View>
                                 <Text style={styles.logoText}>Welcome</Text>
-                                <Text style={styles.logoSubtitle}>You join in future </Text>
+                                <Text style={styles.logoSubtitle}>You join in the future </Text>
                             </View>
                         </View>
                         <TouchableOpacity style={styles.bellButton}>
@@ -101,7 +101,7 @@ export default function Home() {
                                 <View style={styles.infoRow}>
                                     <Feather name="clock" color ='#dbd7d7'/>
                                     <Text style={styles.infoText}>
-                                        Último commit: {formatDate(repoData?.lastCommitDate ?? '')}
+                                        Last Commit: {formatDate(repoData?.lastCommitDate ?? '')}
                                     </Text>
                                 </View>
                                 <TouchableOpacity 
@@ -189,10 +189,11 @@ const styles = StyleSheet.create({
         padding: 15,
         justifyContent: 'center',
     },
-    imageCard:{
+    imageCard: {
         width: 80,
-        height: '50%',
-        borderRadius: 5
+        height: 100,
+        resizeMode: 'contain',
+        borderRadius: 12,
     },
     cardTitle: {
         color: '#F8F9FA',
@@ -205,7 +206,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
-        marginBottom: 8,
+        marginBottom: 10,
     },
 
     infoText: {
