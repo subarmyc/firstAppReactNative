@@ -1,4 +1,4 @@
-import { Link } from 'expo-router'
+import { Link, useRouter } from 'expo-router'
 import { useState } from 'react'
 import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native'
 
@@ -12,6 +12,7 @@ export default function SingUp() {
     const [createEmail, setEmail] = useState("")
     const [createPassword, setPassword] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
+    const router = useRouter()
 
 
     // Validate the email and password fields and show an alert if they are empty, invalid, or do not match, otherwise show a success message
@@ -24,12 +25,14 @@ export default function SingUp() {
             if (!createEmail.trim() || !createPassword.trim() || !name.trim() || !confirmPassword.trim()) {
                return  Alert.alert('You Stupid!', 'Please fill in all fields');
             }
-
+            if (createPassword.length < 8) {
+                return Alert.alert('Error', 'Password must be at least 8 characters long');
+            }
             if (createPassword != confirmPassword) {
                 return Alert.alert('Error', 'Passwords do not match');
             }  
 
-            Alert.alert('Success', 'You have successfully signed in!');
+            router.push('/home')
         }
     
     return (
