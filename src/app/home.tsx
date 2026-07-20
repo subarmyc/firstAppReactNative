@@ -42,8 +42,6 @@ export default function Home() {
                         lastCommitDate: lastCommitDate ?? '',
                         totalCommits,
                     })
-                } catch (error) {
-                    console.error('Erro ao buscar dados do GitHub:', error)
                 } finally {
                     setLoading(false)
                 }
@@ -79,7 +77,7 @@ export default function Home() {
                     <LinearGradient
                         colors={['#7C4DFF', '#1E90FF']}
                         locations={[0, 0.9]}
-                        start={{ x: 0.2, y: 0 }}
+                        start={{ x: 0.2, y: 0 }}    
                         end={{ x: 1.7, y: 1.5 }}
                         style={styles.projetCard}
                     >
@@ -91,7 +89,7 @@ export default function Home() {
                                 <View style={styles.infoRow}>
                                     <Feather name="code" color='#dbd7d7' />
                                     <Text style={styles.infoText}>{repoData?.language}</Text>
-                                </View>q
+                                </View>
 
                                 <View style={styles.infoRow}>
                                     <Feather name="git-commit" color='#dbd7d7'  />
@@ -107,7 +105,7 @@ export default function Home() {
                                 <TouchableOpacity 
                                 style={styles.repoButton} 
                                 onPress={() => Linking.openURL(`https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}`)}>
-                                    <Text style={styles.repoButtonText}>Join to Repository</Text>
+                                    <Text style={styles.repoButtonText}>Open Respository</Text>
                                     <Feather name="arrow-right" color="#7C4DFF" size={16} />
                                 </TouchableOpacity>
                             </View>
@@ -115,13 +113,36 @@ export default function Home() {
                         </View>
                            
                     </LinearGradient>
-                    
+                    {/* Creating a navBar with items */}
+                    <View style={styles.navBar}>
+                        <TouchableOpacity style={styles.navItems}>
+                            <Feather name ='home' color='#dbd7d7' size={22}/>
+                            <Text style={styles.navName}>Home</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.navItems}>
+                            <Feather name="search" color="#dbd7d7" size={22} />
+                            <Text style={styles.navName}>Search</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.navItems}>
+                            <Feather name="plus-square" color="#dbd7d7" size={22} />
+                            <Text style={styles.navName}>New</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.navItems}>
+                            <Feather name="star" color="#dbd7d7" size={22} />
+                            <Text style={styles.navName}>Favorite</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.navItems}>
+                            <Feather name="user" color="#dbd7d7" size={22} />
+                            <Text style={styles.navName}>Profile</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-                <View style={styles.bottomBanner}></View>
+                
             </ScrollView>
         </KeyboardAvoidingView>
     )
 }
+
 
 const styles = StyleSheet.create({
     container: {
@@ -225,16 +246,30 @@ const styles = StyleSheet.create({
         marginTop: 8,
         alignSelf: 'flex-start', 
     },
-
     repoButtonText: {
         color: '#7C4DFF',
         fontSize: 14,
         fontWeight: '600',
     },
-
-    bottomBanner: {
-        width: '100%',
-        height: '10%',
-        backgroundColor: '#11172A',
+    navBar: {
+        position: 'absolute',
+        bottom: 20,        
+        left: 10,          
+        right: 10,          
+        height: 60,
+        backgroundColor: '#22293f',
+        borderRadius: 15,
+        alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        paddingHorizontal:10,
     },
+    navItems:{
+        alignItems: 'center',
+        gap:4
+    },
+    navName: {
+        fontSize: 11,
+        color: '#dbd7d7'
+    }
 })
