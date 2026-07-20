@@ -15,14 +15,14 @@ export default function Index() {
 
     // Validate the email and password fields and show an alert if they are empty, otherwise show a success message
     function handleSignIn() {
-        if (!email.trim() || !password.trim()) {
-           return  Alert.alert('You Stupid!', 'Please fill in all fields');
-        }
+        // if (!email.trim() || !password.trim()) {
+        //    return  Alert.alert('You Stupid!', 'Please fill in all fields');
+        // }
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email.trim())) {
-                return Alert.alert('Failed', 'Please enter a valid email address');
-        }
+        // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        //     if (!emailRegex.test(email.trim())) {
+        //         return Alert.alert('Failed', 'Please enter a valid email address');
+        // }
         router.push('/home')
     }
 
