@@ -1,15 +1,14 @@
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
-import { FlatList, Image, KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { TextInput, Modal, FlatList, Image, KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 
 
 //Owner and repository name shown in the main card
 const GITHUB_OWNER = 'subarmyc'
 const GITHUB_REPO = 'firstAppReactNative'
-// Friend username, whose repos show up in the carousel
-const GITHUB_FRIEND = 'BrunoAlm'
+
 
 // Shape of the main repository data 
 type RepoData = {
@@ -37,7 +36,12 @@ export default function Home() {
     // Holds the friend's repo list, used by the carousel
     const [friendRepos, setFriendRepos] = useState<FriendRepo[]>([])
     const [loadingFriendRepos, setLoadingFriendRepos] = useState(true)
-        
+    // Which GitHub username the carousel is currently showing
+    const [githubFriend, setGithubFriend] = useState('BrunoAlm')
+    // Controls whether the popup is visible
+    const [modalVisible, setModalVisible] = useState(false) 
+    // Holds what the user is typing, before confirming
+    const [usernameInput, setUsernameInput] = useState('')
     
     // Reference to the FlatList, used to control auto-scroll
     const flatListRef = useRef<FlatList>(null)
@@ -76,29 +80,33 @@ export default function Home() {
                 }
             }
 
-            // Fetches the friend's repo list for the carousel
-           async function fetchFriendRepos() {
-            try {
-                const response = await fetch(`https://api.github.com/users/${GITHUB_FRIEND}/repos?sort=updated&per_page=10`)
-                const json = await response.json()
-
-                // If the API returns an error (rate limit, user not found)
-                if (Array.isArray(json)) {
-                    setFriendRepos(json)
-                } else {
-                    console.error('Erro ao buscar repositórios do amigo:', json.message)
-                }
-            } catch (error) {
-                console.error('Erro ao buscar repositórios do amigo:', error)
-            } finally {
-                setLoadingFriendRepos(false)
-            }
-        }
-
         // Run both fetches
         fetchGithubData()
-        fetchFriendRepos()
         },[])
+
+        // Fetches the friend's repos, runs again whenever githubFriend changes
+        useEffect(() => {
+            async function fetchFriendRepos() {
+                setLoadingFriendRepos(true)
+                try {
+                    const response = await fetch(`https://api.github.com/users/${githubFriend}/repos?sort=updated&per_page=10`)
+                    const json = await response.json()
+
+                    if (Array.isArray(json)) {
+                        setFriendRepos(json)
+                    } else {
+                        console.error('Error fetching friend repos:', json.message)
+                        setFriendRepos([])
+                    }
+                } catch (error) {
+                    console.error('Error fetching friend repos:', error)
+                } finally {
+                    setLoadingFriendRepos(false)
+                }
+            }
+
+            fetchFriendRepos()
+        }, [githubFriend])
 
         // Controls the carousel's automatic scroll every 3 seconds
         useEffect(() => {
@@ -120,7 +128,16 @@ export default function Home() {
                 return () => clearInterval(interval)
         }, [friendRepos])
 
-        
+        // 
+        function handleConfirmUsername() {
+            if (!usernameInput.trim()) return
+
+            setGithubFriend(usernameInput.trim())
+            setModalVisible(false)
+            setUsernameInput('')
+            setCurrentIndex(0)
+        }
+
         // Formats the API's ISO date into Brazilian format (dd/mm/yyyy)
         function formatDate(isoDate: string) {
         if (!isoDate) return '--'
@@ -196,7 +213,7 @@ export default function Home() {
                             <Feather name="search" color="#dbd7d7" size={22} />
                             <Text style={styles.navName}>Search</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.navItems}>
+                        <TouchableOpacity style={styles.navItems} onPress={() => setModalVisible(true)}>
                             <Feather name="plus-square" color="#dbd7d7" size={22} />
                             <Text style={styles.navName}>New</Text>
                         </TouchableOpacity>
@@ -212,7 +229,7 @@ export default function Home() {
 
                     {/* Carousel block with the friend's repositories */}
                     <View style ={styles.carouselContent}>
-                        <Text style={styles.sectionTitle}>  {GITHUB_FRIEND} Projects</Text>
+                        <Text style={styles.sectionTitle}>  {githubFriend} Projects</Text>
                        
                         {/* Horizontal list that auto-scrolls every 3 seconds */}
                         <FlatList
@@ -254,6 +271,45 @@ export default function Home() {
                                 </View>
                             )}
                         />
+
+                        <Modal
+                            visible={modalVisible}
+                            transparent
+                            animationType="fade"
+                            onRequestClose={() => setModalVisible(false)}
+                        >
+                            <View style={styles.modalOverlay}>
+                                <View style={styles.modalContent}>
+                                    <Text style={styles.modalTitle}>Search GitHub User</Text>
+
+                                    <TextInput
+                                        style={styles.modalInput}
+                                        placeholder="e.g. Brunoalm"
+                                        placeholderTextColor="#9A9AB0"
+                                        value={usernameInput}
+                                        onChangeText={setUsernameInput}
+                                        autoCapitalize="none"
+                                        autoCorrect={false}
+                                    />
+
+                                    <View style={styles.modalButtonRow}>
+                                        <TouchableOpacity
+                                            style={[styles.modalButton, styles.modalCancelButton]}
+                                            onPress={() => setModalVisible(false)}
+                                        >
+                                            <Text style={styles.modalCancelText}>Cancel</Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            style={[styles.modalButton, styles.modalConfirmButton]}
+                                            onPress={handleConfirmUsername}
+                                        >
+                                            <Text style={styles.modalConfirmText}>Search</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </View>
+                        </Modal>
                     </View>
                 </View>
             </ScrollView>
@@ -431,6 +487,58 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 10,
+    },
+    modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    },
+    modalContent: {
+        backgroundColor: '#1A2138',
+        width: '85%',
+        borderRadius: 16,
+        padding: 20,
+    },
+    modalTitle: {
+        color: '#F8F9FA',
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 16,
+    },
+    modalInput: {
+        backgroundColor: '#22293f',
+        color: '#F8F9FA',
+        borderRadius: 10,
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        fontSize: 14,
+        marginBottom: 20,
+    },
+    modalButtonRow: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        gap: 10,
+    },
+    modalButton: {
+        paddingVertical: 10,
+        paddingHorizontal: 18,
+        borderRadius: 8,
+    },
+    modalCancelButton: {
+        backgroundColor: 'transparent',
+    },
+    modalCancelText: {
+        color: '#9A9AB0',
+        fontSize: 14,
+    },
+    modalConfirmButton: {
+        backgroundColor: '#7C4DFF',
+    },
+    modalConfirmText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
     },
     navBar: {
         position: 'absolute',
