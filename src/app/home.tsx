@@ -128,7 +128,7 @@ export default function Home() {
                 return () => clearInterval(interval)
         }, [friendRepos])
 
-        // 
+        //Saves the valid username, closes the modal, and resets the states
         function handleConfirmUsername() {
             if (!usernameInput.trim()) return
 
@@ -271,7 +271,7 @@ export default function Home() {
                                 </View>
                             )}
                         />
-
+                        {/* Shows the modal on screen */}
                         <Modal
                             visible={modalVisible}
                             transparent
@@ -280,26 +280,26 @@ export default function Home() {
                         >
                             <View style={styles.modalOverlay}>
                                 <View style={styles.modalContent}>
-                                    <Text style={styles.modalTitle}>Search GitHub User</Text>
+                                    <Text style={styles.modalTitle}>Search a GitHub User</Text>
 
                                     <TextInput
                                         style={styles.modalInput}
-                                        placeholder="e.g. Brunoalm"
+                                        placeholder="e.g. BruninhoNits"
                                         placeholderTextColor="#9A9AB0"
                                         value={usernameInput}
                                         onChangeText={setUsernameInput}
                                         autoCapitalize="none"
                                         autoCorrect={false}
                                     />
-
                                     <View style={styles.modalButtonRow}>
+                                        {/* Disable the modal */}
                                         <TouchableOpacity
                                             style={[styles.modalButton, styles.modalCancelButton]}
                                             onPress={() => setModalVisible(false)}
                                         >
-                                            <Text style={styles.modalCancelText}>Cancel</Text>
+                                            <Text style={styles.modalCancelText}>Close</Text>
                                         </TouchableOpacity>
-
+                                        {/* Confirm the modal */}
                                         <TouchableOpacity
                                             style={[styles.modalButton, styles.modalConfirmButton]}
                                             onPress={handleConfirmUsername}
