@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     carouselContent:{
-        backgroundColor: '#1A2138',
+        backgroundColor: '#22293f',
         width: '90%',
         minHeight: 200,
         marginTop: 30,
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
     },
 
     repoCard: {
-        backgroundColor: '#22293f',
+        backgroundColor: '#2d3347',
         width: 150,
         padding: 12,
         borderRadius: 10,
@@ -430,7 +430,6 @@ const styles = StyleSheet.create({
         color: '#F8F9FA',
         fontSize: 18,
         fontWeight: 'bold',
-        marginTop: 16,
         marginBottom: 10,
     },
     navBar: {
