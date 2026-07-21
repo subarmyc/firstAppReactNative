@@ -1,29 +1,56 @@
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect, useState } from 'react';
-import { Image, KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { FlatList, Image, KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 
 
-//Define name and repository name to variable
+//Owner and repository name shown in the main card
 const GITHUB_OWNER = 'subarmyc'
 const GITHUB_REPO = 'firstAppReactNative'
+// Friend username, whose repos show up in the carousel
+const GITHUB_FRIEND = 'BrunoAlm'
 
-// Define variable to Datas
+// Shape of the main repository data 
 type RepoData = {
     language: string
     lastCommitDate: string
     totalCommits: number
 }
 
+// Shape of each friend repository coming from the GitHub API
+type FriendRepo = {
+    id: number
+    name: string
+    language: string | null
+    stargazers_count: number
+    html_url: string
+}
+
 export default function Home() {
 
+    // Holds the main repository data (language, commits, etc)
     const [repoData, setRepoData] = useState<RepoData | null>(null)
     const [loading, setLoading] = useState(true)
+
+
+    // Holds the friend's repo list, used by the carousel
+    const [friendRepos, setFriendRepos] = useState<FriendRepo[]>([])
+    const [loadingFriendRepos, setLoadingFriendRepos] = useState(true)
+        
+    
+    // Reference to the FlatList, used to control auto-scroll
+    const flatListRef = useRef<FlatList>(null)
+
+    // Tracks which carousel item is currently visible
+    const [currentIndex, setCurrentIndex] = useState(0)
+
+        // Fetches data from the API 
         useEffect(() => {
             async function fetchGithubData() {
                 try {
-                    // Connect to API using nome and repository name
+
+                    // Get general repository data
                     const repoResponse = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}`)
                     const repoJson = await repoResponse.json()
 
@@ -37,29 +64,75 @@ export default function Home() {
                     const match = linkHeader?.match(/page=(\d+)>; rel="last"/)
                     const totalCommits = match ? parseInt(match[1]) : commitsJson.length
 
+                    // Save everything to state to use on the screen
                     setRepoData({
                         language: repoJson.language ?? 'N/A',
                         lastCommitDate: lastCommitDate ?? '',
                         totalCommits,
                     })
                 } finally {
+                    // Stop showing loading,
                     setLoading(false)
                 }
             }
 
-            fetchGithubData()
+            // Fetches the friend's repo list for the carousel
+           async function fetchFriendRepos() {
+            try {
+                const response = await fetch(`https://api.github.com/users/${GITHUB_FRIEND}/repos?sort=updated&per_page=10`)
+                const json = await response.json()
+
+                // If the API returns an error (rate limit, user not found)
+                if (Array.isArray(json)) {
+                    setFriendRepos(json)
+                } else {
+                    console.error('Erro ao buscar repositórios do amigo:', json.message)
+                }
+            } catch (error) {
+                console.error('Erro ao buscar repositórios do amigo:', error)
+            } finally {
+                setLoadingFriendRepos(false)
+            }
+        }
+
+        // Run both fetches
+        fetchGithubData()
+        fetchFriendRepos()
         },[])
 
-        //Format date
+        // Controls the carousel's automatic scroll every 3 seconds
+        useEffect(() => {
+
+            // Only auto-scroll once repos have been loaded
+            if (friendRepos.length === 0) return
+
+                const interval = setInterval(() => {
+                    setCurrentIndex((prevIndex) => {
+                        const nextIndex = prevIndex + 1 >= friendRepos.length ? 0 : prevIndex + 1
+                        flatListRef.current?.scrollToIndex({
+                            index: nextIndex,
+                            animated: true,
+                        })
+                        return nextIndex
+                    })
+                }, 3000)
+
+                return () => clearInterval(interval)
+        }, [friendRepos])
+
+        
+        // Formats the API's ISO date into Brazilian format (dd/mm/yyyy)
         function formatDate(isoDate: string) {
         if (!isoDate) return '--'
         return new Date(isoDate).toLocaleDateString('pt-BR')
     }
 
     return (
+        // Adjusts the screen when the keyboard opens (not relevant here, but good practice)
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.select({ ios: 'padding', android: 'height' })}>
             <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
                 <View style={styles.container}>
+                    {/* Top of the screen: logo, greeting and notification bell */}
                     <View style={styles.topBanner}>
                         <View style={styles.logoBox}>
                             <Image source={require('@/assets/home.png')} style={styles.logo} />
@@ -73,7 +146,7 @@ export default function Home() {
                         </TouchableOpacity>
                     </View>
 
-                    {/* Gradient of card on homepage */}
+                    {/* Purple gradient card with the main repository info */}
                     <LinearGradient
                         colors={['#7C4DFF', '#1E90FF']}
                         locations={[0, 0.9]}
@@ -137,11 +210,52 @@ export default function Home() {
                         </TouchableOpacity>
                     </View>
 
+                    {/* Carousel block with the friend's repositories */}
                     <View style ={styles.carouselContent}>
+                        <Text style={styles.sectionTitle}>  {GITHUB_FRIEND} Projects</Text>
+                       
+                        {/* Horizontal list that auto-scrolls every 3 seconds */}
+                        <FlatList
+                            ref={flatListRef}
+                            data={friendRepos}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            keyExtractor={(item) => item.id.toString()}
+                            contentContainerStyle={styles.carouselList}
+                            
+                            // Retry if auto-scroll fails
+                            onScrollToIndexFailed={(info) => {
+                                setTimeout(() => {
+                                    flatListRef.current?.scrollToIndex({ index: info.index, animated: true })
+                                }, 100)
+                            }}
+                            renderItem={({ item }) => (
+                                <View style={styles.repoCard}>
+                                    <Text style={styles.repoCardTitle} numberOfLines={1}>{item.name}</Text>
+                                    {/* Repository language */}
+                                    <View style={styles.repoCardRow}>
+                                        <Feather name="code" size={12} color="#dbd7d7" />
+                                        <Text style={styles.repoCardText}>{item.language ?? 'N/A'}</Text>
+                                    </View>
+                                    {/* Star count */}
+                                    <View style={styles.repoCardRow}>
+                                        <Feather name="star" size={12} color="#dbd7d7" />
+                                        <Text style={styles.repoCardText}>{item.stargazers_count}</Text>
+                                    </View>
 
+                                    {/* Button that opens this specific repository in the browser */}
+                                    <TouchableOpacity
+                                        style={styles.repoCardButton}
+                                        onPress={() => Linking.openURL(item.html_url)}
+                                    >
+                                        <Text style={styles.repoCardButtonText}>Open Repository</Text>
+                                        <Feather name="arrow-right" color="#7C4DFF" size={14} />
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                        />
                     </View>
                 </View>
-                
             </ScrollView>
         </KeyboardAvoidingView>
     )
@@ -255,16 +369,70 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     carouselContent:{
-        backgroundColor: '#dada',
+        backgroundColor: '#1A2138',
         width: '90%',
-        minHeight: 300,
-        marginTop: 40,
+        minHeight: 200,
+        marginTop: 30,
         marginLeft: 20,
-        borderRadius: 10,
+        borderRadius: 15,
         padding: 15,
-        justifyContent: 'center',
     },
 
+    carouselList: {
+        gap: 10,
+    },
+
+    repoCard: {
+        backgroundColor: '#22293f',
+        width: 150,
+        padding: 12,
+        borderRadius: 10,
+    },
+
+    repoCardTitle: {
+        color: '#F8F9FA',
+        fontSize: 13,
+        fontWeight: '600',
+        marginBottom: 8,
+    },
+
+    repoCardRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 4,
+    },
+
+    repoCardText: {
+        color: '#dbd7d7',
+        fontSize: 11,
+    },
+
+    repoCardButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#F8F9FA',
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+        borderRadius: 8,
+        gap: 6,
+        marginTop: 10,
+    },
+
+    repoCardButtonText: {
+        color: '#7C4DFF',
+        fontSize: 11,
+        fontWeight: '600',
+    },
+
+    sectionTitle:{
+        color: '#F8F9FA',
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginTop: 16,
+        marginBottom: 10,
+    },
     navBar: {
         position: 'absolute',
         bottom: 20,        
